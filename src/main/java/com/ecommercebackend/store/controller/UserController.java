@@ -1,6 +1,7 @@
 package com.ecommercebackend.store.controller;
 
 import com.ecommercebackend.store.dtos.RegisterUserRequest;
+import com.ecommercebackend.store.dtos.UpdateUserRequest;
 import com.ecommercebackend.store.dtos.UserDto;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
@@ -51,4 +52,18 @@ public class UserController {
         //otherwise it is good to embedded the location in the response
 
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable(name = "id") Long id,@RequestBody UpdateUserRequest request){
+         var user=userRepository.findById(id).orElse(null);
+         if(user==null){
+             return ResponseEntity.notFound().build();
+         }
+         userMapper.update(request,user);
+         userRepository.save(user);
+         return ResponseEntity.ok(userMapper.toDto(user));
+
+
+    }
+
 }
