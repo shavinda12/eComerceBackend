@@ -6,14 +6,18 @@ import com.ecommercebackend.store.dtos.UpdateUserRequest;
 import com.ecommercebackend.store.dtos.UserDto;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -41,7 +45,10 @@ public class UserController {
     }
 
     @PostMapping
-    public  ResponseEntity<UserDto> createUser(@RequestBody RegisterUserRequest request, UriComponentsBuilder uriBuilder){
+    public  ResponseEntity<?> registerUser(@Valid  @RequestBody RegisterUserRequest request, UriComponentsBuilder uriBuilder){
+        if(userRepository.existsByEmail((request.getEmail()))){
+            return ResponseEntity.badRequest().body(Map.of("email","email already exists"));
+        }
         var user=userMapper.toEntity(request);
         userRepository.save(user);
         var userDto=userMapper.toDto(user);
@@ -53,7 +60,6 @@ public class UserController {
         //so we get it by using uri,uriBuilder
         //if the created source only wants to share between internal services we don't need created.just 200 is okay
         //otherwise it is good to embedded the location in the response
-
     }
 
     @PutMapping("/{id}")
