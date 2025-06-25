@@ -45,7 +45,10 @@ public class UserController {
     }
 
     @PostMapping
-    public  ResponseEntity<UserDto> createUser(@Valid  @RequestBody RegisterUserRequest request, UriComponentsBuilder uriBuilder){
+    public  ResponseEntity<?> registerUser(@Valid  @RequestBody RegisterUserRequest request, UriComponentsBuilder uriBuilder){
+        if(userRepository.existsByEmail((request.getEmail()))){
+            return ResponseEntity.badRequest().body(Map.of("email","email already exists"));
+        }
         var user=userMapper.toEntity(request);
         userRepository.save(user);
         var userDto=userMapper.toDto(user);
