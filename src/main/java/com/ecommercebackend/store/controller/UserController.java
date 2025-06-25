@@ -6,6 +6,7 @@ import com.ecommercebackend.store.dtos.UpdateUserRequest;
 import com.ecommercebackend.store.dtos.UserDto;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,7 @@ public class UserController {
     }
 
     @PostMapping
-    public  ResponseEntity<UserDto> createUser(@RequestBody RegisterUserRequest request, UriComponentsBuilder uriBuilder){
+    public  ResponseEntity<UserDto> createUser(@Valid  @RequestBody RegisterUserRequest request, UriComponentsBuilder uriBuilder){
         var user=userMapper.toEntity(request);
         userRepository.save(user);
         var userDto=userMapper.toDto(user);
