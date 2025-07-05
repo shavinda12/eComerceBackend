@@ -91,4 +91,15 @@ public class CartController {
         cartRepository.save(cart);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{cartId}/items")
+    public ResponseEntity<Void> deleteCart(@PathVariable(name = "cartId") UUID cartId){
+        var cart=cartRepository.findById(cartId).orElse(null);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }
+        cart.clearItems();
+        cartRepository.save(cart);
+        return ResponseEntity.noContent().build();
+    }
 }
