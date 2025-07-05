@@ -1,9 +1,6 @@
 package com.ecommercebackend.store.controller;
 
-import com.ecommercebackend.store.dtos.RegisterUserRequest;
-import com.ecommercebackend.store.dtos.UpdatePasswordRequest;
-import com.ecommercebackend.store.dtos.UpdateUserRequest;
-import com.ecommercebackend.store.dtos.UserDto;
+import com.ecommercebackend.store.dtos.*;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
 import jakarta.validation.Valid;
@@ -64,6 +61,7 @@ public class UserController {
         //if the created source only wants to share between internal services we don't need created.just 200 is okay
         //otherwise it is good to embedded the location in the response
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(@PathVariable(name = "id") Long id,@RequestBody UpdateUserRequest request){

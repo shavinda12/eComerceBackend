@@ -34,7 +34,8 @@ public class SecurityConfig {
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(c->
                         c.requestMatchers("/carts/**").permitAll()
-                                .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/users/**").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/auth/**").permitAll()
                                 .anyRequest().authenticated());
 
 
