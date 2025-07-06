@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
          var authHeader=request.getHeader("Authorization");
 
-         if(authHeader == null && !authHeader.startsWith("Bearer ")) {
+         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
              //in here if there is no authorization header this will give the request to nest filter chain
              //so request like login they don't have a jwt token
              filterChain.doFilter(request, response);
