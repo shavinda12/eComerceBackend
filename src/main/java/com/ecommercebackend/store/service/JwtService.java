@@ -1,5 +1,6 @@
 package com.ecommercebackend.store.service;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,4 +22,19 @@ public class JwtService {
                 .compact();
 
     }
+
+    public boolean validateToken(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.getExpiration().after(new Date());//this will check the expiration
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
 }
