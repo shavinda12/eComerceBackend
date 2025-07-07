@@ -1,28 +1,29 @@
 package com.ecommercebackend.store.service;
 
+import com.ecommercebackend.store.config.JwtConfig;
 import com.ecommercebackend.store.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
 @Service
+@AllArgsConstructor
 public class JwtService {
 
-    @Value("${spring.jwt.secret}")
-    private String secret;
+    private final JwtConfig jwtConfig;
     public String generateAccessToken(User user){
-        final long accessTokenExpiration=86400; //1 day in seconds
-        return generateToken(user,accessTokenExpiration);
+        //1 day in seconds
+        return generateToken(user,jwtConfig.getAccessTokenExpiration());
     }
 
     public String generateRefreshToken(User user){
-        final long refreshTokenExpiration=604800;
-        return generateToken(user,refreshTokenExpiration);
+        return generateToken(user,jwtConfig.getRefreshTokenExpiration());
     }
 
     public String generateToken(User user, long tokenExpiration){
@@ -32,7 +33,7 @@ public class JwtService {
                 .claim("name",user.getName())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+1000*tokenExpiration))
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .signWith(jwtConfig.generateSecretKey())
                 .compact();
     }
 
@@ -47,7 +48,7 @@ public class JwtService {
 
     public Claims getClaimsFromToken(String token){
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .verifyWith(jwtConfig.generateSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
