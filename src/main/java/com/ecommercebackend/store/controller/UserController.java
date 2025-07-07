@@ -1,6 +1,7 @@
 package com.ecommercebackend.store.controller;
 
 import com.ecommercebackend.store.dtos.*;
+import com.ecommercebackend.store.entities.Role;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
 import jakarta.validation.Valid;
@@ -50,6 +51,7 @@ public class UserController {
         }
         var user=userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER); 
         userRepository.save(user);
         var userDto=userMapper.toDto(user);
         var uri=uriBuilder.path("/users/{id}").buildAndExpand(userDto.getId()).toUri();
