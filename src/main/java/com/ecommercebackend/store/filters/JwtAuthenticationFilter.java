@@ -38,7 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
              return;
          }
 
-         var authentication=new UsernamePasswordAuthenticationToken(jwtService.getEmailFromToken(token),null,null);
+         //this is storing the details about the current user using security context holder
+         var authentication=new UsernamePasswordAuthenticationToken(jwtService.getUserIdFromToken(token),null,null);
          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
          SecurityContextHolder.getContext().setAuthentication(authentication);
 

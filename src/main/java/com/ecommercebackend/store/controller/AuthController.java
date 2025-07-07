@@ -3,6 +3,8 @@ package com.ecommercebackend.store.controller;
 import com.ecommercebackend.store.dtos.JwtResponse;
 import com.ecommercebackend.store.dtos.LoginRequestDto;
 import com.ecommercebackend.store.dtos.UserDto;
+import com.ecommercebackend.store.entities.User;
+import com.ecommercebackend.store.exceptions.UserEmailNotFoundException;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
 import com.ecommercebackend.store.service.JwtService;
@@ -14,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,7 +35,9 @@ public class AuthController {
                         request.getEmail(),
                         request.getPassword())
         );
-        var jwt=jwtService.generateToken(request.getEmail());
+        var user=userRepository.findByEmail(request.getEmail()).orElseThrow();
+        var jwt=jwtService.generateToken(user);
+
         return ResponseEntity.ok(new JwtResponse(jwt));
     }
 
@@ -45,10 +50,10 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser(){
-        var authenticataion=SecurityContextHolder.getContext().getAuthentication();
-        var email=(String) authenticataion.getPrincipal();
+        var authentication=SecurityContextHolder.getContext().getAuthentication();
+        var userId=(Long) authentication.getPrincipal();
 
-        var user=userRepository.findByEmail(email).orElseThrow(null);
+        var user=userRepository.findById(userId).orElseThrow(null);
         if(user==null){
             return ResponseEntity.notFound().build();
         }
@@ -58,6 +63,11 @@ public class AuthController {
     @ExceptionHandler({BadCredentialsException.class})
     public ResponseEntity<Void> handleBadCredentials(){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @ExceptionHandler({UserEmailNotFoundException.class})
+    public ResponseEntity<Void> handleUserEmailNotFound(){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
 }
