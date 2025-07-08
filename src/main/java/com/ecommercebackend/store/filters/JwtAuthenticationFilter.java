@@ -7,12 +7,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -39,7 +41,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
          }
 
          //this is storing the details about the current user using security context holder
-         var authentication=new UsernamePasswordAuthenticationToken(jwtService.getUserIdFromToken(token),null,null);
+        //so in the security context handler we can pass those values
+        //so first argument is the pricncipal that should be a id or something
+        //second one should be credential
+        //third one should be the role of the user
+
+        var role=jwtService.getRoleFromToken(token);
+         var userId=jwtService.getUserIdFromToken(token);
+         var authentication=new UsernamePasswordAuthenticationToken(
+                 userId
+                 ,null,
+                  List.of(new SimpleGrantedAuthority("ROLE_"+role.name())));
          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
          SecurityContextHolder.getContext().setAuthentication(authentication);
 

@@ -1,6 +1,7 @@
 package com.ecommercebackend.store.service;
 
 import com.ecommercebackend.store.config.JwtConfig;
+import com.ecommercebackend.store.entities.Role;
 import com.ecommercebackend.store.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -57,6 +58,10 @@ public class JwtService {
 
     public Long getUserIdFromToken(String token){
         return Long.valueOf(getClaimsFromToken(token).getSubject());
+    }
+
+    public Role getRoleFromToken(String token){
+        return Role.valueOf(getClaimsFromToken(token).get("role",String.class));
     }
 
 

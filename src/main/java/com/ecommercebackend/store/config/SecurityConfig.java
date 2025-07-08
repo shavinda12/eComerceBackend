@@ -1,5 +1,6 @@
 package com.ecommercebackend.store.config;
 
+import com.ecommercebackend.store.entities.Role;
 import com.ecommercebackend.store.filters.JwtAuthenticationFilter;
 import com.ecommercebackend.store.service.UserDetailsService;
 import lombok.AllArgsConstructor;
@@ -52,14 +53,27 @@ public class SecurityConfig {
                         c.requestMatchers("/carts/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/auth/refresh").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/admin/**").hasRole(Role.ADMIN.name())
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                //so in here if the authentication is failded like expired access token this security filter will issue 403 forbidden by default
-                //but it is not the good way.the status code should be unauthorized
-                //so this will override the status code of the expired access token issue as unauthorized
                 .exceptionHandling(
-                        c->
-                                c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+                        c->{
+                            //so in here if the authentication is failded like expired access token this security filter will issue 403 forbidden by default
+                            //but it is not the good way.the status code should be unauthorized
+                            //so this will override the status code of the expired access token issue as unauthorized
+                            c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+
+                            //This is the second error handling which is saying if the user is authenticated
+                            //If he doesn't have the correct role then the status code should be not authorized
+                            //it should be forbidden 403
+                            //so we have to override the above status
+                            c.accessDeniedHandler((request, response, accessDeniedException) -> {
+                                response.setStatus(HttpStatus.FORBIDDEN.value());
+                            });
+                        }
+
+                );
 
         return http.build();
     }
