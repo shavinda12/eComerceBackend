@@ -3,7 +3,6 @@ package com.ecommercebackend.store.controller;
 import com.ecommercebackend.store.dtos.JwtResponse;
 import com.ecommercebackend.store.dtos.LoginRequestDto;
 import com.ecommercebackend.store.dtos.UserDto;
-import com.ecommercebackend.store.entities.User;
 import com.ecommercebackend.store.exceptions.UserEmailNotFoundException;
 import com.ecommercebackend.store.mappers.UserMapper;
 import com.ecommercebackend.store.repositories.UserRepository;
@@ -18,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,6 +28,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Valid  @RequestBody LoginRequestDto request, HttpServletResponse response){
         authenticationManager.authenticate(
@@ -38,9 +37,9 @@ public class AuthController {
                         request.getPassword())
         );
         var user=userRepository.findByEmail(request.getEmail()).orElseThrow();
-        var jwt=jwtService.generateAccessToken(user);
+        var accessToken=jwtService.generateAccessToken(user);
         var refreshToken=jwtService.generateRefreshToken(user);
-        var cookie=new Cookie("refreshToken",refreshToken);
+        var cookie=new Cookie("refreshToken",refreshToken.toString());
         cookie.setHttpOnly(true);
         cookie.setPath("/auth/refresh");
         cookie.setMaxAge(604800); //7 days
@@ -48,22 +47,22 @@ public class AuthController {
         response.addCookie(cookie);
 
 
-        return ResponseEntity.ok(new JwtResponse(jwt));
+        return ResponseEntity.ok(new JwtResponse(accessToken.toString()));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponse> refreshToken(@CookieValue(name = "refreshToken") String refreshToken){
-        var validation=jwtService.validateToken(refreshToken);
-        if(!validation){
+        var jwt = jwtService.parseToken(refreshToken);
+        if(jwt==null || jwt.isExpired(refreshToken)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        var userId=jwtService.getUserIdFromToken(refreshToken);
+        var userId=jwt.getUserIdFromToken(refreshToken);
         var user=userRepository.findById(userId).orElseThrow(null);
         if(user==null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        var jwt=jwtService.generateAccessToken(user);
-        return ResponseEntity.ok(new JwtResponse(jwt));
+        var newAccessToken=jwtService.generateAccessToken(user);
+        return ResponseEntity.ok(new JwtResponse(newAccessToken.toString()));
     }
 
 

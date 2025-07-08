@@ -18,51 +18,47 @@ import java.util.Date;
 public class JwtService {
 
     private final JwtConfig jwtConfig;
-    public String generateAccessToken(User user){
+    public Jwt generateAccessToken(User user){
         //1 day in seconds
         return generateToken(user,jwtConfig.getAccessTokenExpiration());
     }
 
-    public String generateRefreshToken(User user){
+    public Jwt generateRefreshToken(User user){
         return generateToken(user,jwtConfig.getRefreshTokenExpiration());
     }
 
-    public String generateToken(User user, long tokenExpiration){
-        return Jwts.builder()
+    public Jwt generateToken(User user, long tokenExpiration){
+        var claims=Jwts.claims()
                 .subject(user.getId().toString())
-                .claim("email",user.getEmail())
-                .claim("name",user.getName())
-                .claim("role",user.getRole())
+                .add("email",user.getEmail())
+                .add("name",user.getName())
+                .add("role",user.getRole())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+1000*tokenExpiration))
-                .signWith(jwtConfig.generateSecretKey())
-                .compact();
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            var claims = getClaimsFromToken(token);
-            return claims.getExpiration().after(new Date());//this will check the expiration
-        } catch (JwtException e) {
-            return false;
-        }
+                .build();
+        return new Jwt(claims,jwtConfig.generateSecretKey());
     }
 
     public Claims getClaimsFromToken(String token){
         return Jwts.parser()
-                .verifyWith(jwtConfig.generateSecretKey())
+                .verifyWith(this.jwtConfig.generateSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
 
-    public Long getUserIdFromToken(String token){
-        return Long.valueOf(getClaimsFromToken(token).getSubject());
+
+    public Jwt parseToken(String token){
+        try{
+            var claims=getClaimsFromToken(token);
+            return new Jwt(claims,jwtConfig.generateSecretKey());
+        }catch(JwtException e){
+            return null;
+        }
+
     }
 
-    public Role getRoleFromToken(String token){
-        return Role.valueOf(getClaimsFromToken(token).get("role",String.class));
-    }
+
 
 
 
