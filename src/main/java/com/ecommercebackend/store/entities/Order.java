@@ -1,0 +1,49 @@
+package com.ecommercebackend.store.entities;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Entity
+@Table(name = "orders")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id" )
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private User customer;
+
+    @OneToMany(mappedBy = "order_id")
+    private List<OrderItem> items=new ArrayList<>();
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
+    @Column(name = "created_at",insertable = false,updatable = false )
+    private LocalDateTime created_at;
+
+    @Column(name = "total_price",nullable = false)
+    private BigDecimal total_price;
+
+    public void addOrderItem(OrderItem orderItem){
+        items.add(orderItem);
+        orderItem.setOrder_id(this);
+    }
+}
