@@ -5,13 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "orders")
@@ -41,6 +40,18 @@ public class Order {
 
     @Column(name = "total_price",nullable = false)
     private BigDecimal total_price;
+
+    public static Order fromCart(Cart cart,User customer){
+        var order=new Order();
+        order.setCustomer(customer);
+        order.setStatus(OrderStatus.PENDING);
+        order.setTotal_price(cart.getTotalPrice());
+        cart.getItems().forEach(cartItem -> {
+            var orderItem=new OrderItem(order,cartItem.getProduct(),cartItem.getQuantity());
+            order.items.add(orderItem);
+        });
+        return order;
+    }
 
     public void addOrderItem(OrderItem orderItem){
         items.add(orderItem);

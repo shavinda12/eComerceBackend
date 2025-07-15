@@ -7,13 +7,12 @@ import com.ecommercebackend.store.exceptions.ProductNotFoundException;
 import com.ecommercebackend.store.service.CartService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springdoc.api.ErrorMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Map;
+
 import java.util.UUID;
 
 @RestController
