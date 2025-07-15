@@ -1,9 +1,6 @@
 package com.ecommercebackend.store.controller;
 
-import com.ecommercebackend.store.dtos.AddItemToCartRequest;
-import com.ecommercebackend.store.dtos.CartDto;
-import com.ecommercebackend.store.dtos.CartItemDto;
-import com.ecommercebackend.store.dtos.UpdateCartItemDto;
+import com.ecommercebackend.store.dtos.*;
 import com.ecommercebackend.store.exceptions.CartItemNotFoundException;
 import com.ecommercebackend.store.exceptions.CartNotFoundException;
 import com.ecommercebackend.store.exceptions.ProductNotFoundException;
@@ -15,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Map;
+
 import java.util.UUID;
 
 @RestController
@@ -60,17 +57,17 @@ public class CartController {
 
 
     @ExceptionHandler(CartNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleCartNotFound(){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error","cart not found"));
+    public ResponseEntity<ErrorDto> handleCartNotFound(){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto("cart not found"));
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleProductNotFound(){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error","product not found in the cart"));
+    public ResponseEntity<ErrorDto> handleProductNotFound(){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto("product not found in the cart"));
     }
 
     @ExceptionHandler(CartItemNotFoundException.class)
-    public ResponseEntity<Map<String,String>> handleCartItemNotFound(){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error","cart item not found"));
+    public ResponseEntity<ErrorDto> handleCartItemNotFound(){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto("cart item not found"));
     }
 }
