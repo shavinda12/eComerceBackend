@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -28,7 +29,8 @@ public class Order {
     @JoinColumn(name = "customer_id")
     private User customer;
 
-    @OneToMany(mappedBy = "order_id")
+    @OneToMany(mappedBy = "order_id", cascade = CascadeType.PERSIST)
+
     private List<OrderItem> items=new ArrayList<>();
 
     @Column(name = "status")
