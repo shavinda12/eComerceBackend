@@ -4,7 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class CheckoutResponseDto {
     private Long orderId;
+    private String checkOutUrl;
+
+    public CheckoutResponseDto(Long orderId, String checkOutUrl) {
+        this.orderId = orderId;
+        this.checkOutUrl = checkOutUrl;
+    }
 }
