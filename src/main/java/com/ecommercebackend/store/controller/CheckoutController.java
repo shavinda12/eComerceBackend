@@ -14,6 +14,7 @@ import com.ecommercebackend.store.repositories.OrderRepository;
 import com.ecommercebackend.store.service.AuthService;
 import com.ecommercebackend.store.service.CartService;
 import com.ecommercebackend.store.service.CheckoutService;
+import com.stripe.exception.StripeException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,8 +33,14 @@ public class CheckoutController {
 
 
     @PostMapping
-    public ResponseEntity<CheckoutResponseDto> checkout(@RequestBody  CheckoutRequestDto request){
-        return ResponseEntity.status(HttpStatus.OK).body(checkoutService.checkout(request));
+    public ResponseEntity<?> checkout(@RequestBody  CheckoutRequestDto request){
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(checkoutService.checkout(request));
+        }
+        catch(StripeException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR). body(new ErrorDto("Something went wrong in stripe"));
+        }
+
     }
 
     @ExceptionHandler({CartNotFoundException.class, CartEmptyException.class})
