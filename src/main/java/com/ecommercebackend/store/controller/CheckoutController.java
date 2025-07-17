@@ -9,6 +9,7 @@ import com.ecommercebackend.store.entities.OrderItem;
 import com.ecommercebackend.store.entities.OrderStatus;
 import com.ecommercebackend.store.exceptions.CartEmptyException;
 import com.ecommercebackend.store.exceptions.CartNotFoundException;
+import com.ecommercebackend.store.exceptions.PaymentNotFoundException;
 import com.ecommercebackend.store.repositories.CartRepository;
 import com.ecommercebackend.store.repositories.OrderRepository;
 import com.ecommercebackend.store.service.AuthService;
@@ -34,13 +35,13 @@ public class CheckoutController {
 
     @PostMapping
     public ResponseEntity<?> checkout(@RequestBody  CheckoutRequestDto request){
-        try{
             return ResponseEntity.status(HttpStatus.OK).body(checkoutService.checkout(request));
-        }
-        catch(StripeException e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR). body(new ErrorDto("Something went wrong in stripe"));
-        }
 
+    }
+
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<?> paymentNotFound(PaymentNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto("Payment not found"));
     }
 
     @ExceptionHandler({CartNotFoundException.class, CartEmptyException.class})
