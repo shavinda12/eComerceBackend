@@ -15,6 +15,7 @@ import com.ecommercebackend.store.repositories.OrderRepository;
 import com.ecommercebackend.store.service.AuthService;
 import com.ecommercebackend.store.service.CartService;
 import com.ecommercebackend.store.service.CheckoutService;
+import com.ecommercebackend.store.service.WebhookRequest;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -39,8 +40,7 @@ public class CheckoutController {
     private final OrderRepository orderRepository;
 
 
-    @Value("${stripe.webHookSecretKey}")
-    private String webHookSecretKey;
+
 
 
 
@@ -57,34 +57,8 @@ public class CheckoutController {
     //This will tell this is a succeess payment or failed payment
     //So then server will update the exact payment status as failed or success
     @PostMapping("/webhook")
-    public ResponseEntity<Void> handleWebHook(@RequestHeader("Stripe-Signature") String signature,@RequestBody  String payload){
-        try {
-            var event= Webhook.constructEvent(payload,signature,webHookSecretKey);
-            System.out.println(event);
-
-            var stripeObject= event.getDataObjectDeserializer().getObject().orElse(null);
-
-            switch(event.getType()){
-                case "payment_intent.succeeded"->{
-                    var paymentIntent=(PaymentIntent) stripeObject;
-                    if(paymentIntent!=null){
-                        var order_id= paymentIntent.getMetadata().get("order_id");
-                        var order=orderRepository.findById(Long.valueOf( order_id)).orElseThrow();
-                        order.setStatus(OrderStatus.PAID);
-                        orderRepository.save(order);
-                    }
-                }
-                case "payment_intent.failed"->{
-                    //update as failed
-                }
-            }
-            return ResponseEntity.ok().build();
-
-
-        } catch (SignatureVerificationException e) {
-             return ResponseEntity.badRequest().build();
-        }
-
+    public void  handleWebHook(@RequestHeader   Map<String,String> headers ,@RequestBody  String payload){
+        checkoutService.handleWebHookEvent(new WebhookRequest(headers,payload));
     }
 
     @ExceptionHandler(PaymentNotFoundException.class)

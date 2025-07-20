@@ -2,17 +2,22 @@ package com.ecommercebackend.store.service;
 import com.ecommercebackend.store.dtos.CheckoutRequestDto;
 import com.ecommercebackend.store.dtos.CheckoutResponseDto;
 import com.ecommercebackend.store.entities.Order;
+import com.ecommercebackend.store.entities.OrderStatus;
 import com.ecommercebackend.store.exceptions.CartEmptyException;
 import com.ecommercebackend.store.exceptions.CartNotFoundException;
 import com.ecommercebackend.store.exceptions.PaymentNotFoundException;
 import com.ecommercebackend.store.repositories.CartRepository;
 import com.ecommercebackend.store.repositories.OrderRepository;
-import com.stripe.exception.StripeException;
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.net.Webhook;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 
 
 @Service
@@ -52,6 +57,15 @@ public class CheckoutService {
         }
 
 
+    }
+
+    public void  handleWebHookEvent(WebhookRequest request){
+        paymentGateway.parseWebHookEvent(request)
+                .ifPresent(paymentResult->{
+                    var order=orderRepository.findById(paymentResult.getOrderId()).orElseThrow();
+                    order.setStatus(paymentResult.getPaymentStatus() );
+                    orderRepository.save(order);
+                });
     }
 
 }
