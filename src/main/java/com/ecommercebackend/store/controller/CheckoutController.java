@@ -15,9 +15,14 @@ import com.ecommercebackend.store.repositories.OrderRepository;
 import com.ecommercebackend.store.service.AuthService;
 import com.ecommercebackend.store.service.CartService;
 import com.ecommercebackend.store.service.CheckoutService;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.net.Webhook;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -28,14 +33,57 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/checkout")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CheckoutController {
     private final CheckoutService checkoutService;
+    private final OrderRepository orderRepository;
 
+
+    @Value("${stripe.webHookSecretKey}")
+    private String webHookSecretKey;
+
+
+
+    //So this will conert our cart object in to a order once user wants to purchase
 
     @PostMapping
     public ResponseEntity<?> checkout(@RequestBody  CheckoutRequestDto request){
             return ResponseEntity.status(HttpStatus.OK).body(checkoutService.checkout(request));
+
+    }
+
+
+    //When Stripe payment is done this request is comming from strip to server
+    //This will tell this is a succeess payment or failed payment
+    //So then server will update the exact payment status as failed or success
+    @PostMapping("/webhook")
+    public ResponseEntity<Void> handleWebHook(@RequestHeader("Stripe-Signature") String signature,@RequestBody  String payload){
+        try {
+            var event= Webhook.constructEvent(payload,signature,webHookSecretKey);
+            System.out.println(event);
+
+            var stripeObject= event.getDataObjectDeserializer().getObject().orElse(null);
+
+            switch(event.getType()){
+                case "payment_intent.succeeded"->{
+                    var paymentIntent=(PaymentIntent) stripeObject;
+                    if(paymentIntent!=null){
+                        var order_id= paymentIntent.getMetadata().get("order_id");
+                        var order=orderRepository.findById(Long.valueOf( order_id)).orElseThrow();
+                        order.setStatus(OrderStatus.PAID);
+                        orderRepository.save(order);
+                    }
+                }
+                case "payment_intent.failed"->{
+                    //update as failed
+                }
+            }
+            return ResponseEntity.ok().build();
+
+
+        } catch (SignatureVerificationException e) {
+             return ResponseEntity.badRequest().build();
+        }
 
     }
 

@@ -30,6 +30,7 @@ public class CheckoutService {
 
     @Transactional
     public CheckoutResponseDto checkout(CheckoutRequestDto request) {
+        //this will create an order object
         var cart=cartRepository.findById(request.getCartId()).orElse(null);
         if(cart==null){
             System.out.println("error is in checkout service");

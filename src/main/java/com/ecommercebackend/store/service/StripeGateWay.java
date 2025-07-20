@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+
+//This will implement the payment gateway interface
+//this will implement the stripe payment
 @Service
 public class StripeGateWay implements PaymentGateway {
 
@@ -18,11 +21,19 @@ public class StripeGateWay implements PaymentGateway {
 
     @Override
     public CheckOutSession createSession(Order order) {
+
+        //so first this will create session params including product name
+        //qunatity,unit price.then this params are wrapped around a session
+        //then this session is created and send the strip url to the user
+        //then user can go to that url and purchase the item.
+        //once user purchase the item then it will give user a success url or failed url
+
         try{
             var builder= SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
                     .setSuccessUrl(webSiteUrl+"/checkout-success?orderId="+order.getId() )
-                    .setCancelUrl(webSiteUrl+"/checkout-cancel");
+                    .setCancelUrl(webSiteUrl+"/checkout-cancel")
+                    .putMetadata("order_id",order.getId().toString());
 
             order.getItems().forEach(item->{
                 var lineItem=SessionCreateParams.LineItem.builder()
@@ -35,7 +46,7 @@ public class StripeGateWay implements PaymentGateway {
                                                 SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                         .setName(item.getProduct().getName())
                                                         .build( )
-                                        ).build()
+                                         ).build()
                         ).build();
                 builder.addLineItem(lineItem);
             });
