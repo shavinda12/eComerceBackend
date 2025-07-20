@@ -1,9 +1,7 @@
-package com.ecommercebackend.store.service;
+package com.ecommercebackend.store.payments;
 
 import com.ecommercebackend.store.entities.Order;
 import com.ecommercebackend.store.entities.OrderStatus;
-import com.ecommercebackend.store.exceptions.PaymentException;
-import com.ecommercebackend.store.exceptions.PaymentNotFoundException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -12,7 +10,6 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

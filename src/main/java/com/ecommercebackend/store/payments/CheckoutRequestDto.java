@@ -1,4 +1,4 @@
-package com.ecommercebackend.store.dtos;
+package com.ecommercebackend.store.payments;
 
 import lombok.Data;
 

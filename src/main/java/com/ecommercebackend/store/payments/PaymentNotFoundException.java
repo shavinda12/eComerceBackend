@@ -1,4 +1,4 @@
-package com.ecommercebackend.store.exceptions;
+package com.ecommercebackend.store.payments;
 
 public class PaymentNotFoundException extends RuntimeException {
     public PaymentNotFoundException() {

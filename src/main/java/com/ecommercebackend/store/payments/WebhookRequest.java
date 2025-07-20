@@ -1,4 +1,4 @@
-package com.ecommercebackend.store.service;
+package com.ecommercebackend.store.payments;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
