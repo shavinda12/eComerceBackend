@@ -29,7 +29,7 @@ public class Order {
     @JoinColumn(name = "customer_id")
     private User customer;
 
-    @OneToMany(mappedBy = "order_id", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "order_id", cascade = {CascadeType.PERSIST,CascadeType.REMOVE})
 
     private List<OrderItem> items=new ArrayList<>();
 
